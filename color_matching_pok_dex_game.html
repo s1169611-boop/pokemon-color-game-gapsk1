@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>寶可夢顏色對對碰 - 幼兒園8色學習大冒險</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN for iconography -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts for friendly rounded typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Noto Sans TC', 'Fredoka One', sans-serif;
+            background-color: #0b1329;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        /* Pokédex Outer Bezel & Inner Glass Aesthetics */
+        .pokedex-case {
+            background: linear-gradient(160deg, #dc2626 0%, #b91c1c 70%, #991b1b 100%);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 3px 6px rgba(255, 255, 255, 0.35);
+            border: 4px solid #7f1d1d;
+        }
+
+        .pokedex-screen {
+            background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+            box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.2);
+            border: 3px solid #334155;
+        }
+
+        /* Float & Shake Animations */
+        @keyframes float-bounce {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-6px) scale(1.03); }
+        }
+
+        .animate-float {
+            animation: float-bounce 2.2s ease-in-out infinite;
+        }
+
+        @keyframes shake-err {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        .animate-shake {
+            animation: shake-err 0.4s ease-in-out;
+        }
+
+        /* Precise Pinyin Ruby Typography Alignment */
+        ruby {
+            display: inline-flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            vertical-align: middle;
+            margin: 0 1.5px;
+            line-height: 1;
+        }
+
+        rt {
+            font-size: 0.58em;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 2px;
+            letter-spacing: -0.02em;
+            text-transform: lowercase;
+            user-select: none;
+            opacity: 0.9;
+        }
+
+        /* Speech bubble arrow styling */
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 20px;
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 10px solid #ffffff;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-2 sm:p-4 bg-slate-950 select-none overflow-x-hidden">
+
+    <div class="pokedex-case w-full max-w-md sm:max-w-lg rounded-3xl p-3.5 sm:p-5 relative flex flex-col my-auto transition-all duration-300 shadow-2xl">
+        
+        <!-- Pokédex Header & Status Array -->
+        <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b-2 border-red-800/50">
+            <!-- Glossy Blue Camera Lens & Indicator LEDs -->
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-cyan-400 border-3 border-white shadow-md flex items-center justify-center relative overflow-hidden ring-2 ring-red-900/50">
+                    <div class="absolute top-1 left-1 w-3 h-3 bg-white rounded-full opacity-80"></div>
+                </div>
+                <div class="flex space-x-1.5">
+                    <div class="w-3 h-3 rounded-full bg-red-400 border border-red-700 shadow-sm"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-300 border border-yellow-600 shadow-sm"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-400 border border-green-700 shadow-sm"></div>
+                </div>
+            </div>
+
+            <!-- Header Badge and Mute Control -->
+            <div class="flex items-center space-x-2">
+                <div class="bg-red-950/70 text-amber-300 px-2.5 py-1 rounded-full text-xs font-black border border-red-700/60 flex items-center space-x-1 shadow-inner">
+                    <i class="fas fa-palette text-amber-400 text-xs"></i>
+                    <span>8色認知大冒險</span>
+                </div>
+                <button id="soundToggleBtn" onclick="toggleAudio()" class="w-8 h-8 bg-red-800 hover:bg-red-700 text-white rounded-full border-2 border-red-900 shadow flex items-center justify-center active:scale-95 transition" aria-label="切換聲音">
+                    <i id="soundIcon" class="fas fa-volume-up text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="pokedex-screen rounded-2xl p-3 sm:p-4 flex-1 flex flex-col justify-between relative min-h-[500px] overflow-hidden">
+            
+            <!-- HUD BAR: Level Progress, Heart Lives, Top-Right Score -->
+            <div id="hudBar" class="flex items-center justify-between bg-white/90 backdrop-blur rounded-xl p-2 px-3 border border-slate-300 shadow-sm mb-2.5">
+                <!-- Level Indicator -->
+                <div class="flex items-center space-x-1 text-slate-700 font-black text-xs sm:text-sm">
+                    <i class="fas fa-flag text-amber-500"></i>
+                    <span>關卡 <span id="currentLevelText" class="text-indigo-600 font-black">1</span>/8</span>
+                </div>
+
+                <!-- Lives Counter (3 Hearts) -->
+                <div id="livesContainer" class="flex items-center space-x-1" title="剩餘機會">
+                    <i class="fas fa-heart text-red-500 text-base sm:text-lg drop-shadow-sm"></i>
+                    <i class="fas fa-heart text-red-500 text-base sm:text-lg drop-shadow-sm"></i>
+                    <i class="fas fa-heart text-red-500 text-base sm:text-lg drop-shadow-sm"></i>
+                </div>
+
+                <!-- Score Display (Top Right) -->
+                <div class="flex items-center space-x-1 font-black text-slate-800 text-sm sm:text-base bg-amber-100 px-2.5 py-0.5 rounded-lg border border-amber-300 shadow-inner">
+                    <i class="fas fa-star text-amber-500 text-xs"></i>
+                    <span id="scoreText" class="text-amber-800 font-black">0</span>
+                </div>
+            </div>
+
+            <div id="startScreen" class="flex-1 flex flex-col items-center justify-center text-center p-1">
+                <div class="w-20 h-20 sm:w-24 sm:h-24 mb-2 animate-float relative">
+                    <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow">
+                        <circle cx="50" cy="50" r="46" fill="#facc15" stroke="#1e293b" stroke-width="5" />
+                        <circle cx="32" cy="38" r="7" fill="#ef4444" />
+                        <circle cx="68" cy="38" r="7" fill="#3b82f6" />
+                        <circle cx="50" cy="70" r="7" fill="#22c55e" />
+                        <circle cx="28" cy="60" r="5" fill="#a855f7" />
+                        <circle cx="72" cy="60" r="5" fill="#f97316" />
+                        <circle cx="50" cy="45" r="9" fill="#ffffff" stroke="#1e293b" stroke-width="3" />
+                        <circle cx="50" cy="45" r="4" fill="#1e293b" />
+                    </svg>
+                </div>
+                
+                <h1 class="text-2xl sm:text-3xl font-black text-slate-800 tracking-wide mb-1">
+                    寶可夢<span class="text-red-600">顏色</span>對對碰
+                </h1>
+                <p class="text-xs font-bold text-slate-600 mb-3 bg-white px-3 py-0.5 rounded-full border border-slate-200">
+                    適合 K1-K2 幼兒的 8 色拼音大冒險 🎨
+                </p>
+
+                <!-- Color Badges Preview with Pinyin -->
+                <div class="flex flex-wrap justify-center gap-1.5 mb-4 max-w-xs">
+                    <span class="bg-red-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-lg"><ruby>紅<rt>hóng</rt></ruby><ruby>色<rt>sè</rt></ruby></span>
+                    <span class="bg-yellow-400 text-slate-900 text-[11px] font-bold px-2 py-0.5 rounded-lg"><ruby>黃<rt>huáng</rt></ruby><ruby>色<rt>sè</rt></ruby></span>
+                    <span class="bg-blue-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-lg"><ruby>藍<rt>lán</rt></ruby><ruby>色<rt>sè</rt></ruby></span>
+                    <span class="bg-green-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-lg"><ruby>綠<rt>lǜ</rt></ruby><ruby>色<rt>sè</rt></ruby></span>
+                    <span class="bg-purple-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-lg"><ruby>紫<rt>zǐ</rt></ruby><ruby>色<rt>sè</rt></ruby></span>
+                    <span class="bg-slate-900 text-white text-[11px] font-bold px-2 py-0.5 rounded-lg"><ruby>黑<rt>hēi</rt></ruby><ruby>色<rt>sè</rt></ruby></span>
+                    <span class="bg-white text-slate-900 border border-slate-300 text-[11px] font-bold px-2 py-0.5 rounded-lg"><ruby>白<rt>bái</rt></ruby><ruby>色<rt>sè</rt></ruby></span>
+                    <span class="bg-orange-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-lg"><ruby>橙<rt>chéng</rt></ruby><ruby>色<rt>sè</rt></ruby></span>
+                </div>
+
+                <!-- Game Rules -->
+                <div class="bg-amber-50 border border-amber-300 rounded-xl p-2.5 text-left text-xs text-slate-700 mb-4 w-full space-y-1 shadow-sm">
+                    <div class="flex items-center font-black text-amber-900 mb-0.5">
+                        <i class="fas fa-star mr-1 text-amber-500"></i> 遊戲規則：
+                    </div>
+                    <p>1. 看清楚寶可夢要找的顏色。</p>
+                    <p>2. 在 4 個選項中點選顏色卡片。</p>
+                    <p>3. 答錯有詳細提示，共有 3 顆心哦！</p>
+                </div>
+
+                <button onclick="startGame()" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-black text-lg rounded-xl shadow-md border-b-4 border-green-800 active:translate-y-0.5 transition flex items-center justify-center space-x-2">
+                    <i class="fas fa-play"></i>
+                    <span>開始色彩冒險！</span>
+                </button>
+            </div>
+
+            <div id="questionScreen" class="hidden flex-1 flex flex-col justify-between space-y-2.5">
+                
+                <!-- Pokémon Dialogue Speech Box -->
+                <div class="flex items-center space-x-2.5">
+                    <div id="pokemonAvatar" class="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 animate-float bg-white rounded-xl p-1 border-2 border-slate-300 shadow-sm flex items-center justify-center">
+                        <!-- Dynamic SVG -->
+                    </div>
+
+                    <div class="speech-bubble flex-1 bg-white rounded-xl p-2.5 border-2 border-slate-300 shadow-sm relative">
+                        <div class="text-xs font-extrabold text-indigo-600 mb-0.5" id="pokemonName">
+                            <!-- Dynamic Pokemon Name -->
+                        </div>
+                        <div id="questionPrompt" class="text-xs sm:text-sm font-black text-slate-800 leading-normal">
+                            <!-- Dynamic Prompt -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Target Box -->
+                <div id="targetDisplayBox" class="bg-white rounded-xl p-3 border-3 shadow-inner flex flex-col items-center justify-center min-h-[110px] relative transition-colors duration-300">
+                    <div id="targetVisual" class="flex flex-col items-center justify-center text-center">
+                        <!-- Target Graphic -->
+                    </div>
+                </div>
+
+                <!-- Options Grid (2x2 Buttons) -->
+                <div id="optionsGrid" class="grid grid-cols-2 gap-2">
+                    <!-- Dynamic 4 Option Buttons -->
+                </div>
+            </div>
+
+            <div id="feedbackModal" class="hidden absolute inset-0 bg-slate-900/75 backdrop-blur-sm rounded-2xl flex items-center justify-center p-3 z-30">
+                <div id="feedbackBox" class="bg-white w-full max-w-sm rounded-2xl p-4 border-3 border-slate-300 shadow-2xl flex flex-col items-center text-center">
+                    
+                    <div id="feedbackIcon" class="w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-1">
+                        <!-- Dynamic Icon -->
+                    </div>
+
+                    <h3 id="feedbackTitle" class="text-lg sm:text-xl font-black mb-1">
+                        <!-- Correct / Incorrect Header -->
+                    </h3>
+
+                    <div id="feedbackBody" class="text-xs font-bold text-slate-700 bg-slate-50 p-2.5 rounded-xl w-full my-1.5 border border-slate-200 leading-relaxed text-left space-y-1">
+                        <!-- Educational explanation -->
+                    </div>
+
+                    <button id="feedbackNextBtn" onclick="nextQuestion()" class="w-full mt-2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm rounded-xl shadow border-b-4 border-indigo-900 active:translate-y-0.5 transition">
+                        下一題 ➔
+                    </button>
+                </div>
+            </div>
+
+            <div id="gameOverScreen" class="hidden flex-1 flex flex-col items-center justify-center text-center p-2">
+                <div id="endAvatar" class="w-20 h-20 mb-2 animate-float">
+                    <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow">
+                        <circle cx="50" cy="50" r="45" fill="#3b82f6" stroke="#1e3a8a" stroke-width="5"/>
+                        <path d="M 25 50 A 25 25 0 0 1 75 50 Z" fill="#ef4444"/>
+                        <circle cx="50" cy="50" r="12" fill="#ffffff" stroke="#1e3a8a" stroke-width="4"/>
+                        <circle cx="50" cy="50" r="6" fill="#1e3a8a"/>
+                    </svg>
+                </div>
+
+                <h2 id="endTitle" class="text-2xl font-black text-slate-800 mb-0.5">
+                    遊戲結束！
+                </h2>
+                <p id="endSubtitle" class="text-xs font-bold text-slate-600 mb-3">
+                    太棒了！你已經盡力了哦！
+                </p>
+
+                <!-- Final Score Card -->
+                <div class="bg-amber-100 border border-amber-300 rounded-xl p-3 w-full mb-4 shadow-sm text-center">
+                    <span class="text-xs font-bold text-amber-800 uppercase block mb-0.5">最終總得分</span>
+                    <div id="finalScoreText" class="text-3xl font-black text-amber-600">
+                        0
+                    </div>
+                    <div id="badgeTag" class="mt-1.5 inline-block bg-amber-500 text-white text-xs font-black px-3 py-0.5 rounded-full shadow-sm">
+                        顏色小偵探 🔍
+                    </div>
+                </div>
+
+                <!-- Play Again Button -->
+                <button onclick="startGame()" class="w-full py-3 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-black text-lg rounded-xl shadow-md border-b-4 border-red-800 active:translate-y-0.5 transition flex items-center justify-center space-x-2">
+                    <i class="fas fa-redo-alt"></i>
+                    <span>再玩一次！</span>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Pokédex Bottom Frame Detail -->
+        <div class="mt-2.5 flex items-center justify-between px-2 pt-0.5 text-red-200 text-[10px] font-extrabold tracking-wider">
+            <span>POKÉDEX K1-K2 TRAINER</span>
+            <div class="flex space-x-1">
+                <div class="w-4 h-1.5 bg-slate-800 rounded-full"></div>
+                <div class="w-4 h-1.5 bg-slate-800 rounded-full"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    audioCtx = new AudioContext();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function toggleAudio() {
+            soundEnabled = !soundEnabled;
+            if (!soundEnabled && 'speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            const soundIcon = document.getElementById('soundIcon');
+            if (soundIcon) {
+                soundIcon.className = soundEnabled ? 'fas fa-volume-up text-xs' : 'fas fa-volume-mute text-xs';
+            }
+        }
+
+        // Web Speech API for Standard Mandarin Pronunciation (ensuring full 4th tone "sè" for "色")
+        function speakText(text) {
+            if (!soundEnabled) return;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                // Using zh-TW voice profile to preserve standard 4th tone (sè) for color suffix
+                utterance.lang = 'zh-TW'; 
+                utterance.rate = 0.8;     // Moderate pace for clear young learner comprehension
+                utterance.pitch = 1.0;    // Standard pitch contour
+
+                const voices = window.speechSynthesis.getVoices();
+                const preferredVoice = voices.find(v => v.lang.includes('zh-TW') || v.lang.includes('zh_TW')) ||
+                                       voices.find(v => v.lang.startsWith('zh'));
+                if (preferredVoice) {
+                    utterance.voice = preferredVoice;
+                }
+
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        if ('speechSynthesis' in window && window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                window.speechSynthesis.getVoices();
+            };
+        }
+
+        // Web Audio Synthesizer for feedback chimes
+        function playSound(type) {
+            if (!soundEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'click') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(500, now);
+                osc.frequency.exponentialRampToValueAtTime(750, now + 0.05);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'correct') {
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    const startTime = now + idx * 0.07;
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, startTime);
+                    gain.gain.setValueAtTime(0.2, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.18);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.18);
+                });
+            } else if (type === 'wrong') {
+                const freqs = [220, 180];
+                freqs.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    const startTime = now + idx * 0.12;
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(freq, startTime);
+                    gain.gain.setValueAtTime(0.18, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.14);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.14);
+                });
+            } else if (type === 'gameover') {
+                const notes = [440, 392, 349.23, 293.66];
+                notes.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    const startTime = now + idx * 0.14;
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, startTime);
+                    gain.gain.setValueAtTime(0.2, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.22);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.22);
+                });
+            }
+        }
+
+        const rawQuestionBank = [
+            // 1. 紅色 (Red)
+            {
+                pokemon: "小火龍",
+                pokemonRuby: "<ruby>小<rt>xiǎo</rt></ruby><ruby>火<rt>huǒ</rt></ruby><ruby>龍<rt>lóng</rt></ruby>",
+                pokemonSvg: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M30,80 Q50,20 70,80" fill="#f97316"/><circle cx="45" cy="45" r="4" fill="#fff"/><circle cx="45" cy="45" r="2" fill="#000"/><path d="M55,60 Q60,65 65,60" fill="none" stroke="#000" stroke-width="2"/><path d="M70,70 Q85,60 80,45 Q75,55 70,70" fill="#ef4444"/></svg>`,
+                targetColorName: "紅色",
+                targetRuby: "<ruby>紅<rt>hóng</rt></ruby><ruby>色<rt>sè</rt></ruby>",
+                targetHex: "#ef4444",
+                promptText: "小火龍尾巴有火光！請問哪一個是【紅色】？",
+                targetSvg: `<svg viewBox="0 0 100 100" class="w-14 h-14"><circle cx="50" cy="55" r="32" fill="#ef4444"/><path d="M50,23 C45,13 55,8 50,3" stroke="#15803d" stroke-width="5" fill="none"/><path d="M50,18 Q65,8 60,23 Z" fill="#22c55e"/></svg>`,
+                correctReason: "答對了！紅色（hóng sè）就像紅蘋果和小火龍熱情的火焰一樣喔！",
+                options: [
+                    { name: "紅色", ruby: "<ruby>紅<rt>hóng</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#ef4444", icon: "fa-apple-whole" },
+                    { name: "藍色", ruby: "<ruby>藍<rt>lán</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#3b82f6", icon: "fa-water", wrongReason: "你選的是【藍色 lán sè】！藍色是像大海和水滴一樣的顏色，不是紅色喔！" },
+                    { name: "綠色", ruby: "<ruby>綠<rt>lǜ</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#22c55e", icon: "fa-leaf", wrongReason: "你選的是【綠色 lǜ sè】！綠色是像大樹和綠綠草地一樣的顏色，不是紅色喔！" },
+                    { name: "黃色", ruby: "<ruby>黃<rt>huáng</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#eab308", icon: "fa-sun", wrongReason: "你選的是【黃色 huáng sè】！黃色是像香蕉和閃亮太陽一樣的顏色，不是紅色喔！" }
+                ]
+            },
+            // 2. 黃色 (Yellow)
+            {
+                pokemon: "皮卡丘",
+                pokemonRuby: "<ruby>皮<rt>pí</rt></ruby><ruby>卡<rt>kǎ</rt></ruby><ruby>丘<rt>qiū</rt></ruby>",
+                pokemonSvg: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="55" r="35" fill="#facc15"/><path d="M25,25 L35,45 L15,35 Z" fill="#facc15" stroke="#000" stroke-width="2"/><path d="M75,25 L65,45 L85,35 Z" fill="#facc15" stroke="#000" stroke-width="2"/><circle cx="40" cy="50" r="4" fill="#000"/><circle cx="60" cy="50" r="4" fill="#000"/><circle cx="30" cy="65" r="6" fill="#ef4444"/><circle cx="70" cy="65" r="6" fill="#ef4444"/></svg>`,
+                targetColorName: "黃色",
+                targetRuby: "<ruby>黃<rt>huáng</rt></ruby><ruby>色<rt>sè</rt></ruby>",
+                targetHex: "#eab308",
+                promptText: "皮卡丘身體亮閃閃！請找出【黃色】！",
+                targetSvg: `<svg viewBox="0 0 100 100" class="w-14 h-14"><polygon points="50,5 64,36 98,41 73,65 79,98 50,82 21,98 27,65 2,41 36,36" fill="#facc15" stroke="#ca8a04" stroke-width="3"/></svg>`,
+                correctReason: "好棒喔！黃色（huáng sè）就像皮卡丘和甜甜的香蕉一樣明亮！",
+                options: [
+                    { name: "黃色", ruby: "<ruby>黃<rt>huáng</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#eab308", icon: "fa-lemon" },
+                    { name: "紫色", ruby: "<ruby>紫<rt>zǐ</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#a855f7", icon: "fa-cloud-moon", wrongReason: "你選的是【紫色 zǐ sè】！紫色是像香甜葡萄和茄子一樣的顏色，不是黃色喔！" },
+                    { name: "黑色", ruby: "<ruby>黑<rt>hēi</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#1e293b", icon: "fa-moon", wrongReason: "你選的是【黑色 hēi sè】！黑色是像黑夜和頭髮一樣暗暗的顏色，不是黃色喔！" },
+                    { name: "白色", ruby: "<ruby>白<rt>bái</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#ffffff", icon: "fa-snowflake", wrongReason: "你選的是【白色 bái sè】！白色是像牛奶和白雪一樣亮白的顏色，不是黃色喔！" }
+                ]
+            },
+            // 3. 藍色 (Blue)
+            {
+                pokemon: "傑尼龜",
+                pokemonRuby: "<ruby>傑<rt>jié</rt></ruby><ruby>尼<rt>ní</rt></ruby><ruby>龜<rt>guī</rt></ruby>",
+                pokemonSvg: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="35" fill="#38bdf8"/><circle cx="40" cy="45" r="5" fill="#fff"/><circle cx="40" cy="45" r="2.5" fill="#000"/><circle cx="60" cy="45" r="5" fill="#fff"/><circle cx="60" cy="45" r="2.5" fill="#000"/><path d="M45,60 Q50,68 55,60" fill="none" stroke="#000" stroke-width="2"/></svg>`,
+                targetColorName: "藍色",
+                targetRuby: "<ruby>藍<rt>lán</rt></ruby><ruby>色<rt>sè</rt></ruby>",
+                targetHex: "#3b82f6",
+                promptText: "傑尼龜最喜歡水了！哪一個是【藍色】呢？",
+                targetSvg: `<svg viewBox="0 0 100 100" class="w-14 h-14"><path d="M50,10 Q80,60 50,90 Q20,60 50,10 Z" fill="#3b82f6" stroke="#1d4ed8" stroke-width="3"/></svg>`,
+                correctReason: "太聰明了！藍色（lán sè）就像清澈的大海和傑尼龜噴出的水花！",
+                options: [
+                    { name: "藍色", ruby: "<ruby>藍<rt>lán</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#3b82f6", icon: "fa-umbrella" },
+                    { name: "橙色", ruby: "<ruby>橙<rt>chéng</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#f97316", icon: "fa-carrot", wrongReason: "你選的是【橙色 chéng sè】！橙色是像胡蘿蔔和橘子一樣的顏色，不是藍色喔！" },
+                    { name: "紅色", ruby: "<ruby>紅<rt>hóng</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#ef4444", icon: "fa-strawberry", wrongReason: "你選的是【紅色 hóng sè】！紅色是像草莓和西瓜一樣的顏色，不是藍色喔！" },
+                    { name: "綠色", ruby: "<ruby>綠<rt>lǜ</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#22c55e", icon: "fa-tree", wrongReason: "你選的是【綠色 lǜ sè】！綠色是像公園小草和大樹一樣的顏色，不是藍色喔！" }
+                ]
+            },
+            // 4. 綠色 (Green)
+            {
+                pokemon: "妙蛙種子",
+                pokemonRuby: "<ruby>妙<rt>miào</rt></ruby><ruby>蛙<rt>wā</rt></ruby><ruby>種<rt>zhǒng</rt></ruby><ruby>子<rt>zǐ</rt></ruby>",
+                pokemonSvg: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="25" y="25" width="50" height="50" rx="15" fill="#2dd4bf"/><path d="M35,20 Q50,0 65,20 Q50,35 35,20 Z" fill="#22c55e"/><circle cx="40" cy="45" r="4" fill="#ef4444"/><circle cx="60" cy="45" r="4" fill="#ef4444"/></svg>`,
+                targetColorName: "綠色",
+                targetRuby: "<ruby>綠<rt>lǜ</rt></ruby><ruby>色<rt>sè</rt></ruby>",
+                targetHex: "#22c55e",
+                promptText: "妙蛙種子背著種子！請問哪一個是【綠色】？",
+                targetSvg: `<svg viewBox="0 0 100 100" class="w-14 h-14"><path d="M10,50 Q50,0 90,50 Q50,100 10,50 Z" fill="#22c55e"/><path d="M10,50 L90,50" stroke="#15803d" stroke-width="3"/></svg>`,
+                correctReason: "答對囉！綠色（lǜ sè）就像大樹的葉子和綠綠的公園草地！",
+                options: [
+                    { name: "綠色", ruby: "<ruby>綠<rt>lǜ</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#22c55e", icon: "fa-tree" },
+                    { name: "黃色", ruby: "<ruby>黃<rt>huáng</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#eab308", icon: "fa-star", wrongReason: "你選的是【黃色 huáng sè】！黃色是像閃亮星星和香蕉一樣的顏色，不是綠色喔！" },
+                    { name: "白色", ruby: "<ruby>白<rt>bái</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#ffffff", icon: "fa-snowflake", wrongReason: "你選的是【白色 bái sè】！白色是像白雲和牛奶一樣的顏色，不是綠色喔！" },
+                    { name: "紫色", ruby: "<ruby>紫<rt>zǐ</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#a855f7", icon: "fa-gem", wrongReason: "你選的是【紫色 zǐ sè】！紫色是像茄子和葡萄一樣的顏色，不是綠色喔！" }
+                ]
+            },
+            // 5. 紫色 (Purple)
+            {
+                pokemon: "耿鬼",
+                pokemonRuby: "<ruby>耿<rt>gěng</rt></ruby><ruby>鬼<rt>guǐ</rt></ruby>",
+                pokemonSvg: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="38" fill="#a855f7"/><circle cx="35" cy="45" r="6" fill="#ef4444"/><circle cx="65" cy="45" r="6" fill="#ef4444"/><path d="M35,65 Q50,80 65,65" fill="none" stroke="#fff" stroke-width="3"/></svg>`,
+                targetColorName: "紫色",
+                targetRuby: "<ruby>紫<rt>zǐ</rt></ruby><ruby>色<rt>sè</rt></ruby>",
+                targetHex: "#a855f7",
+                promptText: "耿鬼最喜歡吃葡萄了！請找到【紫色】！",
+                targetSvg: `<svg viewBox="0 0 100 100" class="w-14 h-14"><circle cx="50" cy="35" r="13" fill="#a855f7"/><circle cx="37" cy="55" r="13" fill="#a855f7"/><circle cx="63" cy="55" r="13" fill="#a855f7"/><circle cx="50" cy="73" r="13" fill="#a855f7"/></svg>`,
+                correctReason: "太棒了！紫色（zǐ sè）就像耿鬼和好吃的紫色葡萄一樣！",
+                options: [
+                    { name: "紫色", ruby: "<ruby>紫<rt>zǐ</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#a855f7", icon: "fa-wine-glass-drop" },
+                    { name: "黑色", ruby: "<ruby>黑<rt>hēi</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#1e293b", icon: "fa-moon", wrongReason: "你選的是【黑色 hēi sè】！黑色是像沒有燈光的黑夜，不是紫色喔！" },
+                    { name: "藍色", ruby: "<ruby>藍<rt>lán</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#3b82f6", icon: "fa-cloud", wrongReason: "你選的是【藍色 lán sè】！藍色是像藍藍的天空和大海，不是紫色喔！" },
+                    { name: "橙色", ruby: "<ruby>橙<rt>chéng</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#f97316", icon: "fa-sun", wrongReason: "你選的是【橙色 chéng sè】！橙色是像橘子和夕陽一樣的顏色，不是紫色喔！" }
+                ]
+            },
+            // 6. 黑色 (Black)
+            {
+                pokemon: "月亮伊布",
+                pokemonRuby: "<ruby>月<rt>yuè</rt></ruby><ruby>亮<rt>liàng</rt></ruby><ruby>伊<rt>yī</rt></ruby><ruby>布<rt>bù</rt></ruby>",
+                pokemonSvg: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="38" fill="#1e293b"/><circle cx="50" cy="30" r="10" fill="none" stroke="#facc15" stroke-width="3"/><circle cx="38" cy="48" r="5" fill="#ef4444"/><circle cx="62" cy="48" r="5" fill="#ef4444"/></svg>`,
+                targetColorName: "黑色",
+                targetRuby: "<ruby>黑<rt>hēi</rt></ruby><ruby>色<rt>sè</rt></ruby>",
+                targetHex: "#1e293b",
+                promptText: "月亮伊布在黑夜散步！請幫忙找出【黑色】！",
+                targetSvg: `<svg viewBox="0 0 100 100" class="w-14 h-14"><circle cx="50" cy="50" r="35" fill="#1e293b" stroke="#475569" stroke-width="3"/><path d="M30,30 L70,70 M70,30 L30,70" stroke="#facc15" stroke-width="3"/></svg>`,
+                correctReason: "好厲害喔！黑色（hēi sè）就像烏黑的頭髮和神秘的黑夜！",
+                options: [
+                    { name: "黑色", ruby: "<ruby>黑<rt>hēi</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#1e293b", icon: "fa-moon" },
+                    { name: "白色", ruby: "<ruby>白<rt>bái</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#ffffff", icon: "fa-cloud", wrongReason: "你選的是【白色 bái sè】！白色是像棉花糖和白雲一樣亮的顏色，不是黑色喔！" },
+                    { name: "紅色", ruby: "<ruby>紅<rt>hóng</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#ef4444", icon: "fa-apple-whole", wrongReason: "你選的是【紅色 hóng sè】！紅色是像大蘋果和消防車，不是黑色喔！" },
+                    { name: "黃色", ruby: "<ruby>黃<rt>huáng</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#eab308", icon: "fa-lemon", wrongReason: "你選的是【黃色 huáng sè】！黃色是像香蕉一樣亮的顏色，不是黑色喔！" }
+                ]
+            },
+            // 7. 白色 (White)
+            {
+                pokemon: "波克比",
+                pokemonRuby: "<ruby>波<rt>bō</rt></ruby><ruby>克<rt>kè</rt></ruby><ruby>比<rt>bǐ</rt></ruby>",
+                pokemonSvg: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M25,75 Q50,25 75,75 Z" fill="#ffffff" stroke="#334155" stroke-width="3"/><circle cx="42" cy="55" r="3" fill="#000"/><circle cx="58" cy="55" r="3" fill="#000"/><polygon points="35,68 40,78 45,68" fill="#ef4444"/><polygon points="55,68 60,78 65,68" fill="#3b82f6"/></svg>`,
+                targetColorName: "白色",
+                targetRuby: "<ruby>白<rt>bái</rt></ruby><ruby>色<rt>sè</rt></ruby>",
+                targetHex: "#ffffff",
+                promptText: "波克比住在白色蛋殼裡！請點擊【白色】！",
+                targetSvg: `<svg viewBox="0 0 100 100" class="w-14 h-14"><ellipse cx="50" cy="50" rx="28" ry="36" fill="#ffffff" stroke="#cbd5e1" stroke-width="4"/></svg>`,
+                correctReason: "太棒了！白色（bái sè）就像鮮牛奶、白雲和波克比的蛋殼！",
+                options: [
+                    { name: "白色", ruby: "<ruby>白<rt>bái</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#ffffff", icon: "fa-egg" },
+                    { name: "紫色", ruby: "<ruby>紫<rt>zǐ</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#a855f7", icon: "fa-cloud-moon", wrongReason: "你選的是【紫色 zǐ sè】！紫色是像葡萄一樣深深漂亮的顏色，不是白色喔！" },
+                    { name: "藍色", ruby: "<ruby>藍<rt>lán</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#3b82f6", icon: "fa-water", wrongReason: "你選的是【藍色 lán sè】！藍色是像大海和水滴，不是白色喔！" },
+                    { name: "綠色", ruby: "<ruby>綠<rt>lǜ</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#22c55e", icon: "fa-seedling", wrongReason: "你選的是【綠色 lǜ sè】！綠色是像公園草地，不是白色喔！" }
+                ]
+            },
+            // 8. 橙色 (Orange)
+            {
+                pokemon: "快龍",
+                pokemonRuby: "<ruby>快<rt>kuài</rt></ruby><ruby>龍<rt>lóng</rt></ruby>",
+                pokemonSvg: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M30,80 Q50,20 70,80" fill="#f97316"/><circle cx="45" cy="45" r="4" fill="#000"/><circle cx="65" cy="45" r="4" fill="#000"/><path d="M50,60 Q55,65 60,60" fill="none" stroke="#000" stroke-width="2"/><path d="M25,50 Q10,30 30,30" fill="#22c55e"/></svg>`,
+                targetColorName: "橙色",
+                targetRuby: "<ruby>橙<rt>chéng</rt></ruby><ruby>色<rt>sè</rt></ruby>",
+                targetHex: "#f97316",
+                promptText: "快龍想吃香甜橘子！請問哪一個是【橙色】？",
+                targetSvg: `<svg viewBox="0 0 100 100" class="w-14 h-14"><circle cx="50" cy="55" r="32" fill="#f97316"/><path d="M50,23 Q60,13 50,3" stroke="#15803d" stroke-width="4" fill="none"/><path d="M50,15 Q65,8 60,20 Z" fill="#22c55e"/></svg>`,
+                correctReason: "答對囉！橙色（chéng sè）就像甜甜的橘子和好吃的胡蘿蔔！",
+                options: [
+                    { name: "橙色", ruby: "<ruby>橙<rt>chéng</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#f97316", icon: "fa-cloud-sun" },
+                    { name: "紅色", ruby: "<ruby>紅<rt>hóng</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#ef4444", icon: "fa-pepper-hot", wrongReason: "你選的是【紅色 hóng sè】！紅色是像草莓和大蘋果，不是橙色喔！" },
+                    { name: "黃色", ruby: "<ruby>黃<rt>huáng</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#eab308", icon: "fa-sun", wrongReason: "你選的是【黃色 huáng sè】！黃色是像香蕉和亮晶晶太陽，不是橙色喔！" },
+                    { name: "黑色", ruby: "<ruby>黑<rt>hēi</rt></ruby><ruby>色<rt>sè</rt></ruby>", hex: "#1e293b", icon: "fa-moon", wrongReason: "你選的是【黑色 hēi sè】！黑色是像黑夜一樣暗暗的，不是橙色喔！" }
+                ]
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let lives = 3;
+        let questions = [];
+
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function startGame() {
+            playSound('click');
+            score = 0;
+            lives = 3;
+            currentQuestionIndex = 0;
+            questions = shuffleArray(rawQuestionBank);
+
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('feedbackModal').classList.add('hidden');
+            document.getElementById('questionScreen').classList.remove('hidden');
+
+            updateHUD();
+            renderQuestion();
+        }
+
+        function updateHUD() {
+            document.getElementById('scoreText').innerText = score;
+            document.getElementById('currentLevelText').innerText = Math.min(currentQuestionIndex + 1, questions.length);
+
+            const livesContainer = document.getElementById('livesContainer');
+            livesContainer.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const heart = document.createElement('i');
+                if (i < lives) {
+                    heart.className = 'fas fa-heart text-red-500 text-base sm:text-lg drop-shadow-sm transition-transform transform scale-100';
+                } else {
+                    heart.className = 'far fa-heart text-slate-400 text-base sm:text-lg opacity-50';
+                }
+                livesContainer.appendChild(heart);
+            }
+        }
+
+        function renderQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                showGameOver(true);
+                return;
+            }
+
+            const q = questions[currentQuestionIndex];
+
+            // Render Pokemon Avatar and Speech Header
+            document.getElementById('pokemonAvatar').innerHTML = q.pokemonSvg;
+            document.getElementById('pokemonName').innerHTML = `${q.pokemonRuby} 說：`;
+
+            // Prompt text with matching colored badge and Pinyin
+            const coloredBadge = `<span class="px-2 py-0.5 rounded-lg border font-black text-xs sm:text-sm inline-flex items-center align-middle mx-1 shadow-sm" style="color: ${q.targetHex === '#ffffff' ? '#0f172a' : q.targetHex}; background-color: ${q.targetHex === '#ffffff' ? '#ffffff' : q.targetHex + '18'}; border-color: ${q.targetHex === '#ffffff' ? '#94a3b8' : q.targetHex};">${q.targetRuby}</span>`;
+            const formattedPrompt = q.promptText.replace(`【${q.targetColorName}】`, coloredBadge);
+            document.getElementById('questionPrompt').innerHTML = formattedPrompt;
+
+            // Target Visual Display Box
+            const targetBox = document.getElementById('targetDisplayBox');
+            targetBox.style.borderColor = q.targetHex === '#ffffff' ? '#cbd5e1' : q.targetHex;
+
+            document.getElementById('targetVisual').innerHTML = `
+                ${q.targetSvg}
+                <div class="mt-1.5 px-3 py-1 rounded-full border shadow-sm flex items-center space-x-1 bg-white" style="border-color: ${q.targetHex === '#ffffff' ? '#cbd5e1' : q.targetHex};">
+                    <span class="w-3 h-3 rounded-full border border-slate-300 inline-block" style="background-color: ${q.targetHex};"></span>
+                    <span class="text-xs font-black text-slate-700 flex items-center">目標：${q.targetRuby}</span>
+                </div>
+            `;
+
+            // Choices Grid (Shuffled 4 Buttons)
+            const shuffledOptions = shuffleArray(q.options);
+            const grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+
+            shuffledOptions.forEach(opt => {
+                const isCorrect = (opt.name === q.targetColorName);
+                const btn = document.createElement('button');
+
+                const isLight = (opt.hex === '#eab308' || opt.hex === '#ffffff');
+                const textColor = isLight ? 'text-slate-900' : 'text-white';
+                const borderColor = isLight ? 'border-amber-400' : 'border-black/25';
+
+                btn.className = `w-full h-20 rounded-2xl border-b-4 ${borderColor} flex flex-col items-center justify-center p-2 transition active:scale-95 shadow relative overflow-hidden`;
+                btn.style.backgroundColor = opt.hex;
+
+                if (opt.hex === '#ffffff') {
+                    btn.style.border = "3px solid #cbd5e1";
+                    btn.style.borderBottomWidth = "5px";
+                }
+
+                btn.innerHTML = `
+                    <div class="w-7 h-7 rounded-full bg-white/90 shadow-inner flex items-center justify-center mb-1 border border-slate-200">
+                        <i class="fas ${opt.icon} text-sm" style="color: ${opt.hex === '#ffffff' ? '#64748b' : opt.hex}"></i>
+                    </div>
+                    <div class="font-black text-sm sm:text-base ${textColor} leading-none flex items-center justify-center">
+                        ${opt.ruby}
+                    </div>
+                `;
+
+                btn.onclick = () => handleAnswer(opt, isCorrect, q);
+                grid.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(selectedOption, isCorrect, questionObj) {
+            const modal = document.getElementById('feedbackModal');
+            const iconContainer = document.getElementById('feedbackIcon');
+            const titleEl = document.getElementById('feedbackTitle');
+            const bodyEl = document.getElementById('feedbackBody');
+            const nextBtn = document.getElementById('feedbackNextBtn');
+
+            modal.classList.remove('hidden');
+
+            if (isCorrect) {
+                playSound('correct');
+                speakText(questionObj.targetColorName); // Auto-read correct answer audio
+                score += 100;
+                updateHUD();
+
+                iconContainer.className = "w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-2xl mb-1 animate-bounce";
+                iconContainer.innerHTML = `<i class="fas fa-check-circle"></i>`;
+
+                titleEl.className = "text-lg sm:text-xl font-black text-green-600 mb-0.5";
+                titleEl.innerText = "太棒了！答對囉！🎉";
+
+                bodyEl.innerHTML = `
+                    <div class="flex items-center justify-between text-green-800 font-black mb-1">
+                        <div class="flex items-center space-x-1.5">
+                            <i class="fas fa-star text-amber-500"></i>
+                            <span>正確目標：${questionObj.targetRuby}</span>
+                        </div>
+                        <button onclick="speakText('${questionObj.targetColorName}')" class="px-2.5 py-1 bg-green-200 hover:bg-green-300 text-green-900 rounded-lg text-xs font-black flex items-center space-x-1 shadow-sm transition active:scale-95" aria-label="播放普通話發音">
+                            <i class="fas fa-volume-up"></i>
+                            <span>再聽一次</span>
+                        </button>
+                    </div>
+                    <p class="text-slate-700 leading-normal">${questionObj.correctReason}</p>
+                `;
+
+                nextBtn.className = "w-full mt-2 py-2.5 bg-green-600 hover:bg-green-700 text-white font-black text-sm rounded-xl shadow border-b-4 border-green-900 active:translate-y-0.5 transition";
+                nextBtn.innerText = "繼續下一題 ➔";
+
+            } else {
+                playSound('wrong');
+                lives--;
+                updateHUD();
+
+                iconContainer.className = "w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-2xl mb-1 animate-shake";
+                iconContainer.innerHTML = `<i class="fas fa-times-circle"></i>`;
+
+                titleEl.className = "text-lg sm:text-xl font-black text-red-600 mb-0.5";
+                titleEl.innerText = "差一點點！再加油！💪";
+
+                const wrongExplanation = selectedOption.wrongReason || `你選擇的是【${selectedOption.ruby}】。`;
+
+                bodyEl.innerHTML = `
+                    <div class="p-2 bg-red-50 rounded-lg border border-red-200 text-red-800 font-bold flex items-center space-x-1">
+                        <span>❌ 你點到了：</span>
+                        <span class="font-black">${selectedOption.ruby}</span>
+                    </div>
+                    <p class="text-slate-700 leading-normal">${wrongExplanation}</p>
+                    <div class="p-2 bg-amber-50 rounded-lg border border-amber-200 text-amber-900 font-bold flex items-center space-x-1">
+                        <span>💡 提示：寶可夢要找的是【</span>
+                        <span class="font-black">${questionObj.targetRuby}</span>
+                        <span>】喔！</span>
+                    </div>
+                `;
+
+                if (lives <= 0) {
+                    nextBtn.className = "w-full mt-2 py-2.5 bg-slate-700 hover:bg-slate-800 text-white font-black text-sm rounded-xl shadow border-b-4 border-slate-900 active:translate-y-0.5 transition";
+                    nextBtn.innerText = "查看最後成績 ➔";
+                } else {
+                    nextBtn.className = "w-full mt-2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm rounded-xl shadow border-b-4 border-indigo-900 active:translate-y-0.5 transition";
+                    nextBtn.innerText = "知道了，下一題 ➔";
+                }
+            }
+        }
+
+        function nextQuestion() {
+            playSound('click');
+            document.getElementById('feedbackModal').classList.add('hidden');
+
+            if (lives <= 0) {
+                showGameOver(false);
+            } else {
+                currentQuestionIndex++;
+                renderQuestion();
+            }
+        }
+
+        function showGameOver(isVictory) {
+            if (!isVictory) {
+                playSound('gameover');
+            } else {
+                playSound('correct');
+            }
+
+            document.getElementById('questionScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+
+            document.getElementById('finalScoreText').innerText = score;
+
+            const endTitle = document.getElementById('endTitle');
+            const endSubtitle = document.getElementById('endSubtitle');
+            const badgeTag = document.getElementById('badgeTag');
+
+            if (isVictory || score >= 600) {
+                endTitle.innerText = "恭喜大通關！🏆";
+                endSubtitle.innerText = "太神奇了！你是寶可夢 8 色大師！";
+                badgeTag.innerText = "🌟 寶可夢顏色大師 🌟";
+                badgeTag.className = "mt-1.5 inline-block bg-emerald-500 text-white text-xs font-black px-3 py-0.5 rounded-full shadow";
+            } else if (score >= 300) {
+                endTitle.innerText = "表現得很棒！👍";
+                endSubtitle.innerText = "你已經能認出好多種顏色囉！";
+                badgeTag.innerText = "🔍 厲害的顏色小偵探";
+                badgeTag.className = "mt-1.5 inline-block bg-amber-500 text-white text-xs font-black px-3 py-0.5 rounded-full shadow";
+            } else {
+                endTitle.innerText = "繼續加油喔！💪";
+                endSubtitle.innerText = "多玩幾次，你會認識更多顏色！";
+                badgeTag.innerText = "🌱 顏色學習小新星";
+                badgeTag.className = "mt-1.5 inline-block bg-blue-500 text-white text-xs font-black px-3 py-0.5 rounded-full shadow";
+            }
+        }
+    </script>
+</body>
+</html>
